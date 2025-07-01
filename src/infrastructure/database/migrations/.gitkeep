@@ -1,0 +1,2 @@
+# Esta pasta contém as migrations do TypeORM
+# Migrations são geradas automaticamente com: npm run db:migration:generate

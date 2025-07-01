@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: storagie_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: storagie_user
+      POSTGRES_PASSWORD: storagie_password
+      POSTGRES_DB: storagie
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U storagie_user -d storagie']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Cache, Sessions and Queues
+  redis:
+    image: redis:7-alpine
+    container_name: storagie_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --databases 16
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
