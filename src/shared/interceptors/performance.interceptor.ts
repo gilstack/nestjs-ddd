@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import type { FastifyRequest } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { AppConfig } from '@/infrastructure/config';
 
 interface PerformanceMetrics {
@@ -46,7 +46,7 @@ export class PerformanceInterceptor implements NestInterceptor {
     const startMemory = process.memoryUsage();
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<FastifyRequest>();
-    const response = ctx.getResponse();
+    const response = ctx.getResponse<FastifyReply>();
 
     const { method, url } = request;
     const userAgent = request.headers['user-agent'] || '';
@@ -85,8 +85,10 @@ export class PerformanceInterceptor implements NestInterceptor {
           const duration = Number(endTime - startTime) / 1_000_000;
 
           this.logger.error(
-            `Request failed: ${method} ${url} - ${duration.toFixed(2)}ms - Error: ${error.message}`,
-            error.stack,
+            `Request failed: ${method} ${url} - ${duration.toFixed(2)}ms - Error: ${
+              (error as Error).message
+            }`,
+            (error as Error).stack,
           );
         },
       }),

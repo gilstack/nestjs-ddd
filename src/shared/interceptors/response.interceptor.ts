@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import type { FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 interface InterceptorApiResponse<T> {
   success: boolean;
@@ -19,17 +19,19 @@ interface InterceptorApiResponse<T> {
 }
 
 @Injectable()
-export class ResponseInterceptor<T> implements NestInterceptor<T, InterceptorApiResponse<T>> {
+export class ResponseInterceptor<T>
+  implements NestInterceptor<T, InterceptorApiResponse<T>>
+{
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<InterceptorApiResponse<T>> {
     const ctx = context.switchToHttp();
     const response = ctx.getResponse<FastifyReply>();
-    const request = ctx.getRequest();
+    const request = ctx.getRequest<FastifyRequest>();
 
     return next.handle().pipe(
-      map((data) => {
+      map((data: T | InterceptorApiResponse<T>) => {
         // If data is already a formatted response, return as-is
         if (data && typeof data === 'object' && 'success' in data) {
           return {

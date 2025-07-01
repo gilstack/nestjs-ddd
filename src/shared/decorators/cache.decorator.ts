@@ -28,7 +28,7 @@ export function Cacheable(config?: CacheConfig) {
  * Cache eviction decorator
  * @param patterns Cache key patterns to evict
  */
-export function CacheEvict(patterns: string | string[]) {
+export function CacheEvict(_patterns: string | string[]) {
   return function (
     target: object,
     propertyKey: string,
